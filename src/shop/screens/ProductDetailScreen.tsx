@@ -1,10 +1,19 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, Pressable, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCart } from '../CartContext';
 import { useFavourites } from '../FavouritesContext';
 import HeartButton from '../components/HeartButton';
+import ImageGallery from '../components/ImageGallery';
+import { useToast } from '../ToastContext';
 import { RootStackParamList } from '../types';
 import { Colors, useStyles } from '../theme';
 
@@ -16,20 +25,33 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
   const { product } = route.params;
   const { add, items } = useCart();
   const { isFavourite, toggle } = useFavourites();
+  const { showToast } = useToast();
+  const { width } = useWindowDimensions();
 
   const inCart = items.find(i => i.product.id === product.id)?.qty ?? 0;
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Image source={{ uri: product.thumbnail }} style={styles.image} />
+        <ImageGallery
+          width={width - 40} // screen width minus 20px padding on each side
+          images={product.images?.length ? product.images : [product.thumbnail]}
+        />
         <Text style={styles.category}>{product.category.toUpperCase()}</Text>
         <View style={styles.titleRow}>
           <Text style={styles.title}>{product.title}</Text>
           <HeartButton
             size={28}
             active={isFavourite(product.id)}
-            onPress={() => toggle(product)}
+            label={product.title}
+            onPress={() => {
+              showToast(
+                isFavourite(product.id)
+                  ? 'Removed from favourites'
+                  : 'Saved to favourites',
+              );
+              toggle(product);
+            }}
           />
         </View>
         <Text style={styles.rating}>★ {product.rating.toFixed(1)}</Text>
@@ -38,7 +60,14 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Pressable style={styles.button} onPress={() => add(product)}>
+        <Pressable
+          style={styles.button}
+          onPress={() => {
+            add(product);
+            showToast('Added to cart');
+          }}
+          accessibilityRole="button"
+        >
           <Text style={styles.buttonText}>
             Add to cart{inCart > 0 ? ` (${inCart} in cart)` : ''}
           </Text>
@@ -52,15 +81,8 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
 }
 
 const makeStyles = (c: Colors) => StyleSheet.create({
-  container: { flex: 1, backgroundColor: c.card },
+  container: { flex: 1, backgroundColor: c.background },
   content: { padding: 20 },
-  image: {
-    width: '100%',
-    height: 280,
-    borderRadius: 16,
-    backgroundColor: c.surface,
-    marginBottom: 20,
-  },
   category: { fontSize: 12, color: c.textMuted, letterSpacing: 1 },
   titleRow: {
     flexDirection: 'row',

@@ -17,6 +17,7 @@ import { SortKey } from '../api';
 import { useAuth } from '../AuthContext';
 import { useCategories, useProductsInfinite } from '../queries';
 import ProductCard from '../components/ProductCard';
+import { ProductSkeletonList } from '../components/Skeleton';
 import { Product, RootStackParamList, TabParamList } from '../types';
 import { Colors, useStyles } from '../theme';
 
@@ -137,7 +138,7 @@ export default function ProductListScreen({ navigation }: Props) {
 
       {/* THREE UI STATES of any network screen: loading / error / data */}
       {query.isPending ? (
-        <ActivityIndicator size="large" color={colors.primary} style={styles.center} />
+        <ProductSkeletonList />
       ) : query.isError ? (
         <View style={styles.center}>
           <Text style={styles.errorText}>⚠ {query.error.message}</Text>

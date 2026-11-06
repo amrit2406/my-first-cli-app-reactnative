@@ -119,7 +119,7 @@ export default function LoginScreen() {
 
 const makeStyles = (c: Colors) => StyleSheet.create({
   flex: { flex: 1 },
-  container: { flex: 1, backgroundColor: c.card },
+  container: { flex: 1, backgroundColor: c.background },
   content: { flexGrow: 1, justifyContent: 'center', padding: 24 },
   logo: { fontSize: 56, textAlign: 'center' },
   title: {
@@ -137,7 +137,7 @@ const makeStyles = (c: Colors) => StyleSheet.create({
     marginTop: 4,
   },
   input: {
-    backgroundColor: c.background,
+    backgroundColor: c.card,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,

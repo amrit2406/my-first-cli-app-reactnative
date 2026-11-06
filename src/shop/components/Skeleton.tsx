@@ -31,10 +31,10 @@ export function ProductSkeleton() {
     <View style={styles.card} accessibilityLabel="Loading product">
       <Pulse style={styles.image} />
       <View style={styles.lines}>
-        <Pulse style={{ height: 16, width: '85%' }} />
-        <Pulse style={{ height: 12, width: '40%' }} />
-        <Pulse style={{ height: 12, width: '25%' }} />
-        <Pulse style={{ height: 20, width: '35%', marginTop: 'auto' }} />
+        <Pulse style={styles.lineTitle} />
+        <Pulse style={styles.lineCategory} />
+        <Pulse style={styles.lineRating} />
+        <Pulse style={styles.linePrice} />
       </View>
     </View>
   );
@@ -62,4 +62,8 @@ const makeStyles = (c: Colors) =>
     },
     image: { width: 96, height: 96, borderRadius: 10 },
     lines: { flex: 1, marginLeft: 12, gap: 8 },
+    lineTitle: { height: 16, width: '85%' },
+    lineCategory: { height: 12, width: '40%' },
+    lineRating: { height: 12, width: '25%' },
+    linePrice: { height: 20, width: '35%', marginTop: 'auto' },
   });

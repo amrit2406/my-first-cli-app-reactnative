@@ -38,16 +38,31 @@ export default function CartScreen() {
                 ${(item.product.price * item.qty).toFixed(2)}
               </Text>
               <View style={styles.qtyRow}>
-                <Pressable style={styles.qtyBtn} onPress={() => decrease(item.product.id)}>
+                <Pressable
+                  style={styles.qtyBtn}
+                  onPress={() => decrease(item.product.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Decrease quantity of ${item.product.title}`}
+                >
                   <Text style={styles.qtyBtnText}>−</Text>
                 </Pressable>
                 <Text style={styles.qty}>{item.qty}</Text>
-                <Pressable style={styles.qtyBtn} onPress={() => add(item.product)}>
+                <Pressable
+                  style={styles.qtyBtn}
+                  onPress={() => add(item.product)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Increase quantity of ${item.product.title}`}
+                >
                   <Text style={styles.qtyBtnText}>+</Text>
                 </Pressable>
               </View>
             </View>
-            <Pressable onPress={() => remove(item.product.id)} hitSlop={10}>
+            <Pressable
+              onPress={() => remove(item.product.id)}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={`Remove ${item.product.title} from cart`}
+            >
               <Text style={styles.remove}>✕</Text>
             </Pressable>
           </View>

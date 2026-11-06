@@ -1,6 +1,17 @@
 import React from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  ActivityIndicator,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+  Theme,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -9,6 +20,9 @@ import { AuthProvider, useAuth } from './AuthContext';
 import { CartProvider, useCart } from './CartContext';
 import { FavouritesProvider } from './FavouritesContext';
 import { OrdersProvider } from './OrdersContext';
+import { ThemeProvider, useTheme } from './theme';
+import { ToastProvider } from './ToastContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import ProductListScreen from './screens/ProductListScreen';
 import ProductDetailScreen from './screens/ProductDetailScreen';
 import FavouritesScreen from './screens/FavouritesScreen';
@@ -34,14 +48,22 @@ const queryClient = new QueryClient({
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
-const icon = (emoji: string) => () => <Text style={{ fontSize: 20 }}>{emoji}</Text>;
+const tabIconStyle = StyleSheet.create({ emoji: { fontSize: 20 } });
+const icon = (emoji: string) => () => (
+  <Text style={tabIconStyle.emoji}>{emoji}</Text>
+);
 
 function Tabs() {
   const { totalCount } = useCart(); // red badge on the Cart tab
+  const { colors } = useTheme();
 
   return (
     <Tab.Navigator
-      screenOptions={{ headerShown: false, tabBarActiveTintColor: '#2563EB' }}
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
+      }}
     >
       <Tab.Screen
         name="Shop"
@@ -70,22 +92,41 @@ function Tabs() {
   );
 }
 
+const splashStyle = StyleSheet.create({
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+});
+
 // LESSON: AUTH-BASED NAVIGATION
 // Which screens exist depends on state. When `user` becomes null (logout)
 // the app screens disappear and Login appears, with no manual navigate().
 function Root() {
   const { user, restoring } = useAuth();
+  const { colors, isDark } = useTheme();
+
+  // Teach React Navigation our colours (headers, tab bar, backgrounds).
+  const navTheme: Theme = {
+    ...(isDark ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(isDark ? DarkTheme : DefaultTheme).colors,
+      primary: colors.primary,
+      background: colors.background,
+      card: colors.card,
+      text: colors.text,
+      border: colors.surface,
+    },
+  };
 
   if (restoring) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#2563EB" />
+      <View style={[splashStyle.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navTheme}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <Stack.Navigator>
         {user ? (
           <>
@@ -117,20 +158,30 @@ function Root() {
   );
 }
 
+// LESSON: PROVIDER ORDER MATTERS
+// A component can only use contexts that wrap it. Theme is outermost
+// (everything needs colours); the error boundary sits inside it so its
+// fallback screen is themed too.
 export default function ShopApp() {
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <CartProvider>
-          <FavouritesProvider>
-            <OrdersProvider>
-              <Root />
-            </OrdersProvider>
-          </FavouritesProvider>
-        </CartProvider>
-      </AuthProvider>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <CartProvider>
+                <FavouritesProvider>
+                  <OrdersProvider>
+                    <ToastProvider>
+                      <Root />
+                    </ToastProvider>
+                  </OrdersProvider>
+                </FavouritesProvider>
+              </CartProvider>
+            </AuthProvider>
+          </QueryClientProvider>
+        </ErrorBoundary>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

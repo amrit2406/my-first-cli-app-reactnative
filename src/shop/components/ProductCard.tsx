@@ -3,6 +3,7 @@ import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
 import HeartButton from './HeartButton';
 import { useCart } from '../CartContext';
 import { useFavourites } from '../FavouritesContext';
+import { useToast } from '../ToastContext';
 import { Product } from '../types';
 import { Colors, useStyles } from '../theme';
 
@@ -19,9 +20,15 @@ function ProductCard({ product, onPress }: Props) {
   // this card don't have to pass cart/favourite props down.
   const { add } = useCart();
   const { isFavourite, toggle } = useFavourites();
+  const { showToast } = useToast();
 
   return (
-    <Pressable style={styles.card} onPress={() => onPress(product)}>
+    <Pressable
+      style={styles.card}
+      onPress={() => onPress(product)}
+      accessibilityRole="button"
+      accessibilityLabel={`${product.title}, $${product.price.toFixed(2)}`}
+    >
       <Image source={{ uri: product.thumbnail }} style={styles.image} />
       <View style={styles.info}>
         <View style={styles.titleRow}>
@@ -29,15 +36,31 @@ function ProductCard({ product, onPress }: Props) {
             {product.title}
           </Text>
           <HeartButton
+            label={product.title}
             active={isFavourite(product.id)}
-            onPress={() => toggle(product)}
+            onPress={() => {
+              showToast(
+                isFavourite(product.id)
+                  ? 'Removed from favourites'
+                  : 'Saved to favourites',
+              );
+              toggle(product);
+            }}
           />
         </View>
         <Text style={styles.category}>{product.category}</Text>
         <Text style={styles.rating}>★ {product.rating.toFixed(1)}</Text>
         <View style={styles.bottomRow}>
           <Text style={styles.price}>${product.price.toFixed(2)}</Text>
-          <Pressable style={styles.addBtn} onPress={() => add(product)}>
+          <Pressable
+            style={styles.addBtn}
+            onPress={() => {
+              add(product);
+              showToast('Added to cart');
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={`Add ${product.title} to cart`}
+          >
             <Text style={styles.addBtnText}>+ Cart</Text>
           </Pressable>
         </View>

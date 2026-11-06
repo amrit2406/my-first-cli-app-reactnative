@@ -4,10 +4,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../AuthContext';
 import { useFavourites } from '../FavouritesContext';
 import { useOrders } from '../OrdersContext';
-import { Colors, useStyles } from '../theme';
+import { Colors, ThemeMode, useStyles, useTheme } from '../theme';
+
+const THEME_MODES: { key: ThemeMode; label: string }[] = [
+  { key: 'system', label: 'System' },
+  { key: 'light', label: 'Light' },
+  { key: 'dark', label: 'Dark' },
+];
 
 export default function ProfileScreen() {
   const { styles } = useStyles(makeStyles);
+  const { mode, setMode } = useTheme();
   const { user, logout } = useAuth();
   const { favourites } = useFavourites();
   const { orders } = useOrders();
@@ -43,6 +50,23 @@ export default function ProfileScreen() {
             <Text style={styles.statValue}>{favourites.length}</Text>
             <Text style={styles.statLabel}>Favourites</Text>
           </View>
+        </View>
+
+        <Text style={styles.section}>Appearance</Text>
+        <View style={styles.modes}>
+          {THEME_MODES.map(m => (
+            <Pressable
+              key={m.key}
+              onPress={() => setMode(m.key)}
+              style={[styles.mode, mode === m.key && styles.modeActive]}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: mode === m.key }}
+            >
+              <Text style={[styles.modeText, mode === m.key && styles.modeTextActive]}>
+                {m.label}
+              </Text>
+            </Pressable>
+          ))}
         </View>
 
         <Text style={styles.section}>Order history</Text>
@@ -103,6 +127,17 @@ const makeStyles = (c: Colors) => StyleSheet.create({
   statValue: { fontSize: 24, fontWeight: 'bold', color: c.primary },
   statLabel: { fontSize: 13, color: c.textMuted, marginTop: 2 },
   section: { fontSize: 18, fontWeight: 'bold', color: c.text, marginBottom: 12 },
+  modes: { flexDirection: 'row', gap: 8, marginBottom: 24 },
+  mode: {
+    flex: 1,
+    paddingVertical: 11,
+    borderRadius: 10,
+    backgroundColor: c.surface,
+    alignItems: 'center',
+  },
+  modeActive: { backgroundColor: c.primary },
+  modeText: { fontSize: 13, fontWeight: '600', color: c.textSubtle },
+  modeTextActive: { color: c.onPrimary },
   empty: { color: c.textFaint, marginBottom: 12 },
   order: {
     backgroundColor: c.card,
